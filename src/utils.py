@@ -45,7 +45,7 @@ def loadDataWithLables(baseDirectory):
                     array = np.load(file_path).flatten()
                     data.append(array)
                     labels.append(folder)
-
+    
     return np.array(data), np.array(labels)
 
 
@@ -71,6 +71,7 @@ def makePCADataset():
     saveFilesAccordingToWord(filePaths)
 
     data, labels = loadDataWithLables(config.destinationDatasetDir)
+    pdb.set_trace()
     tranformedData = performPCA(data, target_variance=0.95)
     tranformedDataDestinationWithPath = Path(config.cleanDataDir, 'pcaTransformedData.npy')
     labelsDestinationWithPath = Path(config.cleanDataDir, 'labels.npy')
@@ -80,7 +81,7 @@ def makePCADataset():
 
 def laodPCADataset():
 
-    labels = np.load(Path(config.cleanDataDir, 'pcaTransformedData.npy'))
-    data = np.load(Path(config.cleanDataDir, 'labels.npy'))
-    #pdb.set_trace()
-    return labels, data
+    data = np.load(Path(config.cleanDataDir, 'pcaTransformedData.npy'))
+    labels = np.load(Path(config.cleanDataDir, 'labels.npy'))
+    pdb.set_trace()
+    return data, labels
