@@ -83,5 +83,4 @@ def laodPCADataset():
 
     data = np.load(Path(config.cleanDataDir, 'pcaTransformedData.npy'))
     labels = np.load(Path(config.cleanDataDir, 'labels.npy'))
-    pdb.set_trace()
     return data, labels

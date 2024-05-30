@@ -1,11 +1,70 @@
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import LabelEncoder, OneHotEncoder, StandardScaler
+from sklearn.preprocessing import LabelEncoder,  StandardScaler, OneHotEncoder
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.svm import SVC
 from sklearn.metrics import accuracy_score
 import pdb
+import numpy as np
 from src.utils import laodPCADataset
+
+import tensorflow as tf
+from tensorflow.keras import layers, regularizers
+from sklearn.utils.class_weight import compute_class_weight
+
+
+def create_sequential_model(train_labels):
+
+    class_weights = compute_class_weight(class_weight="balanced", classes=np.unique(train_labels), y=train_labels)
+    class_weights_dict = dict(enumerate(class_weights))
+    print(len(np.unique(train_labels)))
+
+    model = tf.keras.Sequential([
+        tf.keras.layers.Input(shape=(195, 1)),  # Input shape (samples, points, channels)
+        tf.keras.layers.Conv1D(128, 3, activation='relu', kernel_regularizer=tf.keras.regularizers.l2(0.01)),
+        tf.keras.layers.MaxPooling1D(2),
+        tf.keras.layers.Dropout(0.2),
+        tf.keras.layers.Conv1D(256, 3, activation='relu', kernel_regularizer=tf.keras.regularizers.l2(0.01)),
+        tf.keras.layers.MaxPooling1D(2),
+        tf.keras.layers.Dropout(0.2),
+        tf.keras.layers.Conv1D(512, 3, activation='relu', kernel_regularizer=tf.keras.regularizers.l2(0.01)),
+        #tf.keras.layers.MaxPooling1D(2),
+        tf.keras.layers.Dropout(0.2),
+        tf.keras.layers.Conv1D(1024, 3, activation='relu', kernel_regularizer=tf.keras.regularizers.l2(0.01)),
+        tf.keras.layers.MaxPooling1D(2),
+        tf.keras.layers.Dropout(0.2),
+        tf.keras.layers.Flatten(),
+        tf.keras.layers.Dense(256, activation='relu', kernel_regularizer=tf.keras.regularizers.l2(0.01)),
+        tf.keras.layers.Dropout(0.2),
+        tf.keras.layers.Dense(50, activation='sigmoid')  # Binary classification, so output is a single neuron with sigmoid activation
+    ])
+
+    model.compile(optimizer='adam',
+              loss='binary_crossentropy',
+              metrics=['accuracy'],
+        )
+
+    return model, class_weights_dict
+
+
+def fitSequentialModel():
+    X, y = laodPCADataset()
+    scaler = StandardScaler()
+    X = scaler.fit_transform(X)
+    train_data_reshaped = X.reshape(X.shape[0], X.shape[1], 1)
+
+    label_encoder = OneHotEncoder()
+    y_train_encoded = label_encoder.fit_transform(y.reshape(-1, 1))
+    
+
+
+
+    model, class_weights_dict = create_sequential_model(y)
+    #pdb.set_trace()
+    history = model.fit(train_data_reshaped, y_train_encoded.toarray(), epochs=100, validation_split=0.2, class_weight=class_weights_dict)
+
+
+
 
 def fitModels():
     X, y = laodPCADataset()
@@ -29,4 +88,7 @@ def fitModels():
         model.fit(X_train_scaled, y_train_encoded)
         y_pred = model.predict(X_test_scaled)
         accuracy = accuracy_score(y_test_encoded, y_pred)
-        print(f"{name} Accuracy: {accuracy:.2f}")
+        print(f"{name} Accuracy Test: {accuracy:.2f}")
+        y_pred = model.predict(X_train_scaled)
+        accuracy = accuracy_score(y_train_encoded, y_pred)
+        print(f"{name} Accuracy Train: {accuracy:.2f}")
