@@ -42,12 +42,18 @@ class ImageDataLoader:
 
     @staticmethod
     def preprocess_dataset(dataset):
+        dataset = dataset.map(convert_to_grayscale)
         data_augmentation = tf.keras.Sequential([
             tf.keras.layers.Rescaling(1./255),
         ])
 
         return dataset.map(lambda x, y: (data_augmentation(x, training=True), y))
 
+
+def convert_to_grayscale(image, label):
+    image = tf.image.rgb_to_grayscale(image)
+    image = tf.image.convert_image_dtype(image, tf.float32)
+    return image, label
 
 def getDataLoaders():
     data_dir = config.imageDataDirectory

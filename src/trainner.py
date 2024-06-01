@@ -31,7 +31,7 @@ def train():
     train_ds, val_ds = getDataLoaders()
     
     print('loading model')
-    model = CNNLSTMModel((config.imageSize, config.imageSize, 3), config.nClasses)
+    model = CNNLSTMModel((config.imageSize, config.imageSize, 1), config.nClasses)
 
     
     
