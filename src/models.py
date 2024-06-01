@@ -13,6 +13,25 @@ from tensorflow.keras import layers, regularizers
 from sklearn.utils.class_weight import compute_class_weight
 
 
+
+
+
+def CNNLSTMModel(input_shape, num_classes):
+    model = tf.keras.Sequential([
+        tf.keras.layers.Conv2D(64, kernel_size=(3, 3), activation='relu', input_shape=input_shape),
+        tf.keras.layers.MaxPooling2D(pool_size=(2, 2)),
+        tf.keras.layers.Conv2D(128, kernel_size=(3, 3), activation='relu'),
+        tf.keras.layers.MaxPooling2D(pool_size=(2, 2)),
+        tf.keras.layers.Flatten(),
+        #tf.keras.layers.RepeatVector(input_shape[0] // 4 * input_shape[1] // 4),
+        #tf.keras.layers.LSTM(64, return_sequences=False),
+        #tf.keras.layers.LSTM(64),
+        tf.keras.layers.Dense(128, activation='relu'),
+        tf.keras.layers.Dense(num_classes, activation='softmax')
+    ])
+    return model
+
+
 def create_sequential_model(train_labels):
 
     class_weights = compute_class_weight(class_weight="balanced", classes=np.unique(train_labels), y=train_labels)
@@ -20,12 +39,12 @@ def create_sequential_model(train_labels):
     print(len(np.unique(train_labels)))
 
     model = tf.keras.Sequential([
-        tf.keras.layers.Input(shape=(195, 1)),  # Input shape (samples, points, channels)
+        tf.keras.layers.Input(shape=(165, 1)),  # Input shape (samples, points, channels)
         tf.keras.layers.Conv1D(128, 3, activation='relu', kernel_regularizer=tf.keras.regularizers.l2(0.01)),
         tf.keras.layers.MaxPooling1D(2),
         tf.keras.layers.Dropout(0.2),
         tf.keras.layers.Conv1D(256, 3, activation='relu', kernel_regularizer=tf.keras.regularizers.l2(0.01)),
-        tf.keras.layers.MaxPooling1D(2),
+        #tf.keras.layers.MaxPooling1D(2),
         tf.keras.layers.Dropout(0.2),
         tf.keras.layers.Conv1D(512, 3, activation='relu', kernel_regularizer=tf.keras.regularizers.l2(0.01)),
         #tf.keras.layers.MaxPooling1D(2),
@@ -47,26 +66,9 @@ def create_sequential_model(train_labels):
     return model, class_weights_dict
 
 
-def fitSequentialModel():
-    X, y = laodPCADataset()
-    scaler = StandardScaler()
-    X = scaler.fit_transform(X)
-    train_data_reshaped = X.reshape(X.shape[0], X.shape[1], 1)
-
-    label_encoder = OneHotEncoder()
-    y_train_encoded = label_encoder.fit_transform(y.reshape(-1, 1))
-    
 
 
 
-    model, class_weights_dict = create_sequential_model(y)
-    #pdb.set_trace()
-    history = model.fit(train_data_reshaped, y_train_encoded.toarray(), epochs=100, validation_split=0.2, class_weight=class_weights_dict)
-
-
-
-
-def fitModels():
     X, y = laodPCADataset()
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 

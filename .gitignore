@@ -163,3 +163,4 @@ cython_debug/
 rawData/
 Dataset/
 cleanDataset/
+ImageData/
